@@ -1,10 +1,11 @@
-from Projectapi.Models import User
+from Projectapi.Models import User, Category
 from flask import Flask, request,jsonify,url_for
 from Projectapi import app
 from flask_mail import Message
 from Projectapi import mail, db
 from Projectapi.utils import generate_confirmation_token,confirm_token
 from random import randint
+from sqlalchemy import exc
 
 otp = randint(000000,999999)
 otp = str(otp)
@@ -58,14 +59,61 @@ def otp_verification():
 @app.route('/auth/login/',methods = ['POST'])
 def login():
     result = {}
-    email = request.args.get('email')
-    password = request.args.get('password')
-
+    data = request.get_json()
+    email = data['email']
+    password = data['password']
+    print(email)
+    print(password)
     user = User.query.filter_by( email = email).first()
     if user is not None and user.password == password:
-        result = { 'message': "success"}
+        if user.is_admin:
+            result = { 'admin': True,
+                       'message':'user found'
+                    }
+        else:
+            result = { 'admin': False,
+                       'message':'user found'
+                     }
     else:
         result = { 'message': 'user not found'}
 
     return result
 
+@app.route('/add/category/',methods = ['GET','POST'])
+def add_category():
+    result = {}
+    res = request.get_json()
+    title = res['title']
+    try:
+        new_category = Category(title = title)
+        db.session.add(new_category)
+        db.session.commit()
+        result = { 'message':'success'}
+    except exc.SQLAlchemyError as e:
+        result = {'messgae':'failure','error':type(e)}
+    return result
+
+@app.route('/get/category/',methods = ['GET'])
+def get_category():
+    result = {}
+    try:
+        categories = Category.query.all()
+        return jsonify( categories = [ category.Jsonify() for category in categories])
+    except exc.SQLAlchemyError as e:
+        result = { 'message':'failure'}
+        return result
+
+@app.route('/delete/category/<id>', methods = ['GET','DELETE'])
+def delete_category():
+    print(request.args.get('id'))
+    try:
+        category = Category.query.filter_by(id = id)
+        db.session.delete(category)
+        db.session.commit()
+        result = { 'message': 'success'}
+    except exc.SQLAlchemyError as e:
+        result = { 'message': 'failure'}
+        
+    return result
+
+        

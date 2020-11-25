@@ -25,3 +25,16 @@ class User(db.Model):
             'is_admin':self.is_admin
         }
     
+
+class Category(db.Model):
+    id = db.Column( db.Integer , primary_key = True)
+    title = db.Column( db.String(200), unique = True,nullable = False)
+
+    def __init__(self,title):
+        self.title = title
+
+    def Jsonify(self):
+        return{
+            'id':self.id,
+            'title':self.title
+        }

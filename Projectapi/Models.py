@@ -1,6 +1,7 @@
 from Projectapi import db
 
 class User(db.Model):
+    __tablename__ = 'User'
     id = db.Column( db.Integer , primary_key = True)
     email = db.Column( db.String(100), unique = True, nullable = False)
     password =db.Column( db.String(80), nullable = False)
@@ -27,6 +28,7 @@ class User(db.Model):
     
 
 class Category(db.Model):
+    __tablename__ = 'Category'
     id = db.Column( db.Integer , primary_key = True)
     title = db.Column( db.String(200), unique = True,nullable = False)
 
@@ -38,3 +40,27 @@ class Category(db.Model):
             'id':self.id,
             'title':self.title
         }
+
+
+class Brand(db.Model):
+    __tablename__ = 'Brand'
+    id = db.Column(db.Integer , primary_key = True)
+    name = db.Column(db.String(200), unique = True, nullable = False)
+
+    def Jsonify(self):
+        return {
+            'id':self.id,
+            'name':self.name
+        }
+
+class Product(db.Model):
+    __tablename__ = 'Product'
+    id = db.Column( db.Integer , primary_key = True)
+    title = db.Column( db.String(200), unique = True,nullable = False)
+    price = db.Column( db.Integer , nullable = False)
+    discount = db.Column (db.Integer)
+    discount_price = db.Column(db.Integer)
+    brand = db.Column( db.String(200), nullable = False)
+    quantity = db.Column(db.Integer)
+    category = db.Column(db.Integer, db.ForeignKey('Category.id'))
+    is_active = db.Column(db.Boolean, nullable = False, default = True)

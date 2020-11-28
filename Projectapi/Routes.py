@@ -1,4 +1,4 @@
-from Projectapi.Models import User, Category
+from Projectapi.Models import User, Category , Brand , Product
 from flask import Flask, request,jsonify,url_for
 from Projectapi import app
 from flask_mail import Message
@@ -103,11 +103,11 @@ def get_category():
         result = { 'message':'failure'}
         return result
 
-@app.route('/delete/category/<id>', methods = ['GET','DELETE'])
-def delete_category():
-    print(request.args.get('id'))
+@app.route('/delete/category/<int:id>', methods = ['DELETE'])
+def delete_category(id):
+    id = str(id)
     try:
-        category = Category.query.filter_by(id = id)
+        category = Category.query.filter_by(id = id).first()
         db.session.delete(category)
         db.session.commit()
         result = { 'message': 'success'}
@@ -115,5 +115,38 @@ def delete_category():
         result = { 'message': 'failure'}
         
     return result
+
+@app.route('/get/brands/', methods = ['GET'])
+def get_brands():
+    try:
+        brands = Brand.query.all()
+        return jsonify( brands = [ brand.Jsonify() for brand in brands] )
+    except exc.SQLAlchemyError as e:
+        return { 'message':'failure','error':e}
+
+
+@app.route('/add/product/',methods = ['POST'])
+def add_product():
+    result = {}
+    data = request.get_json()
+    title = data['title']
+    price = data['price']
+    discount = data['discount']
+    discount_price = data['discountprice']
+    quantity = data['quantity']
+    brand = data['brand']
+    category = data['category']
+    print(title)
+    try:
+        p = Product(title = title,price = price,discount = discount,discount_price = discount_price,quantity = quantity,brand = brand,category = 2)
+        db.session.add(p)
+        db.session.commit()
+        result = { 'message':'success'}
+    except exc.SQLAlchemyError as e:
+        print(e)
+        result = { 'message':'failure','error':e}
+
+    return result
+
 
         
